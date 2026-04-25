@@ -161,4 +161,4 @@ app.get('/menu/:weekStart', async (req, res) => {
 
 // ==================== START ====================
 
-app.listen(3001, '192.168.0.38', () => console.log('API running on http://localhost:3001'))
+app.listen(3001, '0.0.0.0', () => console.log('API running on http://localhost:3001'))
