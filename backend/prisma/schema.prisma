@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Recipe {
+  id              String   @id @default(uuid())
+  title           String
+  ingredients     String
+  totalMinutes    Int      @default(0)
+  steps           String
+  sourceUrl       String   @default("")
+  notes           String   @default("")
+  addedAt         DateTime @default(now())
+  status          String   @default("a_tester")
+  type            String   @default("semaine")
+  weekendCategory String   @default("")
+  menuSlots       MenuSlot[]
+}
+
+model MenuWeek {
+  id        String     @id @default(uuid())
+  weekStart DateTime
+  validated Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  slots     MenuSlot[]
+}
+
+model MenuSlot {
+  id       String   @id @default(uuid())
+  menuId   String
+  slotDate DateTime
+  recipeId String?
+  isManual Boolean  @default(false)
+  menu     MenuWeek @relation(fields: [menuId], references: [id])
+  recipe   Recipe?  @relation(fields: [recipeId], references: [id])
+}
