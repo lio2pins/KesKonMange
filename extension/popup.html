@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; width: 340px; padding: 16px; background: #f8fafc; }
+    h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #0f172a; }
+    .field { margin-bottom: 10px; }
+    label { display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 3px; }
+    input, select, textarea {
+      width: 100%; padding: 6px 8px; border: 1px solid #e2e8f0;
+      border-radius: 6px; font-size: 13px; background: #fff;
+    }
+    textarea { resize: vertical; height: 60px; }
+    .row { display: flex; gap: 8px; }
+    .row .field { flex: 1; }
+    .btn { width: 100%; padding: 8px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 4px; }
+    .btn-green { background: #10b981; color: #fff; }
+    .btn-gray { background: #e2e8f0; color: #475569; }
+    #status { font-size: 12px; text-align: center; margin-top: 8px; color: #10b981; display: none; }
+    #error { font-size: 12px; text-align: center; margin-top: 8px; color: #ef4444; display: none; }
+  </style>
+</head>
+<body>
+  <h2>🍽 Ajouter cette recette</h2>
+
+  <div class="field">
+    <label>Titre *</label>
+    <input type="text" id="title" placeholder="Nom de la recette">
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>Type</label>
+      <select id="type">
+        <option value="semaine">Semaine</option>
+        <option value="weekend">Week-end</option>
+      </select>
+    </div>
+    <div class="field" id="categoryField" style="display:none">
+      <label>Catégorie</label>
+      <select id="weekendCategory">
+        <option value="">--</option>
+        <option value="entree">Entrée</option>
+        <option value="plat">Plat</option>
+        <option value="dessert">Dessert</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Temps (min)</label>
+      <input type="number" id="totalMinutes" value="0">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Ingrédients</label>
+    <textarea id="ingredients"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Étapes</label>
+    <textarea id="steps"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Notes</label>
+    <input type="text" id="notes" placeholder="Optionnel">
+  </div>
+
+  <button class="btn btn-green" id="save">✅ Ajouter à KesKonMange</button>
+  <button class="btn btn-gray" id="cancel" style="margin-top:6px">Annuler</button>
+
+  <div id="status">✅ Recette ajoutée !</div>
+  <div id="error">❌ Erreur — vérifiez que la VM est allumée</div>
+
+  <script>
+    const API = 'http://192.168.0.13:3001'
+
+    // Afficher/masquer catégorie selon type
+    document.getElementById('type').addEventListener('change', (e) => {
+      document.getElementById('categoryField').style.display =
+        e.target.value === 'weekend' ? 'block' : 'none'
+    })
+
+    // Extraire la recette depuis la page
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'extract' }, (recipe) => {
+        if (recipe) {
+          document.getElementById('title').value = recipe.title || ''
+          document.getElementById('totalMinutes').value = recipe.totalMinutes || 0
+          document.getElementById('ingredients').value = recipe.ingredients || ''
+          document.getElementById('steps').value = recipe.steps || ''
+        }
+      })
+    })
+
+    document.getElementById('save').addEventListener('click', async () => {
+      const title = document.getElementById('title').value.trim()
+      if (!title) { alert('Le titre est obligatoire'); return }
+
+      const recipe = {
+        title,
+        totalMinutes: parseInt(document.getElementById('totalMinutes').value) || 0,
+        ingredients: document.getElementById('ingredients').value,
+        steps: document.getElementById('steps').value,
+        notes: document.getElementById('notes').value,
+        sourceUrl: '',
+        status: 'a_tester',
+        type: document.getElementById('type').value,
+        weekendCategory: document.getElementById('weekendCategory').value
+      }
+
+      // Récupérer l'URL de la page active
+      chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+        recipe.sourceUrl = tabs[0].url
+
+        try {
+          const res = await fetch(`${API}/recipes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(recipe)
+          })
+          if (res.ok) {
+            document.getElementById('status').style.display = 'block'
+            document.getElementById('save').style.display = 'none'
+            setTimeout(() => window.close(), 1500)
+          } else {
+            document.getElementById('error').style.display = 'block'
+          }
+        } catch (e) {
+          document.getElementById('error').style.display = 'block'
+        }
+      })
+    })
+
+    document.getElementById('cancel').addEventListener('click', () => window.close())
+  </script>
+</body>
+</html>

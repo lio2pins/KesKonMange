@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { SEASONS, getCurrentSeason } from './seasons.js'
 
-const API = 'http://localhost:3001'
+const API = 'http://192.168.0.13:3001'
 const STATUS_LABELS = { a_tester: 'À tester', validee: 'Validée', a_oublier: 'À oublier' }
 const STATUS_COLORS = { a_tester: '#f59e0b', validee: '#10b981', a_oublier: '#ef4444' }
 const EMPTY_FORM = {
@@ -129,12 +129,35 @@ export default function App() {
   const validatedRecipes = recipes.filter(r => r.status === 'validee')
 
 
-
+function ExtensionBanner() {
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem('ext-dismissed') === '1')
+  if (dismissed) return null
+  return (
+    <div style={{
+      background: '#fefce8', border: '1px solid #fde047', borderRadius: 10,
+      padding: '12px 16px', marginBottom: 16, display: 'flex',
+      justifyContent: 'space-between', alignItems: 'center', gap: 12
+    }}>
+      <div style={{ fontSize: 13, color: '#854d0e' }}>
+        🧩 <strong>Extension Chrome non détectée</strong> — Installez-la pour ajouter des recettes depuis n'importe quel site.{' '}
+        <a href="https://github.com/lio2pins/KesKonMange/tree/main/extension"
+          target="_blank" rel="noreferrer"
+          style={{ color: '#854d0e', fontWeight: 600 }}>
+          Voir les instructions →
+        </a>
+      </div>
+      <button onClick={() => { localStorage.setItem('ext-dismissed', '1'); setDismissed(true) }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#854d0e' }}>
+        ✕
+      </button>
+    </div>
+  )
+}
 
 
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', padding: '24px 16px', fontFamily: 'system-ui, sans-serif' }}>
-
+    <ExtensionBanner />
       {/* Header */}
       <div style={{ background: sc.bg, borderRadius: 12, padding: '16px 20px', marginBottom: 20, border: `1px solid ${sc.accent}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
