@@ -68,73 +68,17 @@
     <input type="text" id="notes" placeholder="Optionnel">
   </div>
 
+  <div class="field">
+  <label>Source (URL)</label>
+  <input type="text" id="sourceUrl" readonly style="color: #94a3b8; font-size: 11px;">
+  </div>
+
   <button class="btn btn-green" id="save">✅ Ajouter à KesKonMange</button>
   <button class="btn btn-gray" id="cancel" style="margin-top:6px">Annuler</button>
 
   <div id="status">✅ Recette ajoutée !</div>
   <div id="error">❌ Erreur — vérifiez que la VM est allumée</div>
 
-  <script>
-    const API = 'http://192.168.0.13:3001'
-
-    // Afficher/masquer catégorie selon type
-    document.getElementById('type').addEventListener('change', (e) => {
-      document.getElementById('categoryField').style.display =
-        e.target.value === 'weekend' ? 'block' : 'none'
-    })
-
-    // Extraire la recette depuis la page
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'extract' }, (recipe) => {
-        if (recipe) {
-          document.getElementById('title').value = recipe.title || ''
-          document.getElementById('totalMinutes').value = recipe.totalMinutes || 0
-          document.getElementById('ingredients').value = recipe.ingredients || ''
-          document.getElementById('steps').value = recipe.steps || ''
-        }
-      })
-    })
-
-    document.getElementById('save').addEventListener('click', async () => {
-      const title = document.getElementById('title').value.trim()
-      if (!title) { alert('Le titre est obligatoire'); return }
-
-      const recipe = {
-        title,
-        totalMinutes: parseInt(document.getElementById('totalMinutes').value) || 0,
-        ingredients: document.getElementById('ingredients').value,
-        steps: document.getElementById('steps').value,
-        notes: document.getElementById('notes').value,
-        sourceUrl: '',
-        status: 'a_tester',
-        type: document.getElementById('type').value,
-        weekendCategory: document.getElementById('weekendCategory').value
-      }
-
-      // Récupérer l'URL de la page active
-      chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-        recipe.sourceUrl = tabs[0].url
-
-        try {
-          const res = await fetch(`${API}/recipes`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(recipe)
-          })
-          if (res.ok) {
-            document.getElementById('status').style.display = 'block'
-            document.getElementById('save').style.display = 'none'
-            setTimeout(() => window.close(), 1500)
-          } else {
-            document.getElementById('error').style.display = 'block'
-          }
-        } catch (e) {
-          document.getElementById('error').style.display = 'block'
-        }
-      })
-    })
-
-    document.getElementById('cancel').addEventListener('click', () => window.close())
-  </script>
+  <script src="popup.js"></script>
 </body>
 </html>

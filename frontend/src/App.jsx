@@ -131,26 +131,57 @@ export default function App() {
 
 function ExtensionBanner() {
   const [dismissed, setDismissed] = useState(() => localStorage.getItem('ext-dismissed') === '1')
+  const [showHelp, setShowHelp] = useState(false)
   if (dismissed) return null
   return (
-    <div style={{
-      background: '#fefce8', border: '1px solid #fde047', borderRadius: 10,
-      padding: '12px 16px', marginBottom: 16, display: 'flex',
-      justifyContent: 'space-between', alignItems: 'center', gap: 12
-    }}>
-      <div style={{ fontSize: 13, color: '#854d0e' }}>
-        🧩 <strong>Extension Chrome non détectée</strong> — Installez-la pour ajouter des recettes depuis n'importe quel site.{' '}
-        <a href="https://github.com/lio2pins/KesKonMange/tree/main/extension"
-          target="_blank" rel="noreferrer"
-          style={{ color: '#854d0e', fontWeight: 600 }}>
-          Voir les instructions →
-        </a>
+    <>
+      <div style={{
+        background: '#fefce8', border: '1px solid #fde047', borderRadius: 10,
+        padding: '12px 16px', marginBottom: 16, display: 'flex',
+        justifyContent: 'space-between', alignItems: 'center', gap: 12
+      }}>
+        <div style={{ fontSize: 13, color: '#854d0e' }}>
+          🧩 <strong>Extension Chrome</strong> — Ajoutez des recettes depuis n'importe quel site.
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button onClick={() => setShowHelp(true)}
+            style={{ background: '#854d0e', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
+            📖 Comment installer
+          </button>
+          <button onClick={() => { localStorage.setItem('ext-dismissed', '1'); setDismissed(true) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#854d0e' }}>
+            ✕
+          </button>
+        </div>
       </div>
-      <button onClick={() => { localStorage.setItem('ext-dismissed', '1'); setDismissed(true) }}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#854d0e' }}>
-        ✕
-      </button>
-    </div>
+
+      {showHelp && (
+        <Overlay onClick={() => setShowHelp(false)}>
+          <div style={{ ...modalStyle, maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginTop: 0, fontSize: 17 }}>🧩 Installer l'extension Chrome</h2>
+            <ol style={{ paddingLeft: 20, fontSize: 14, lineHeight: 2 }}>
+              <li>Ouvre Chrome et va sur <strong>chrome://extensions/</strong></li>
+              <li>Active le <strong>Mode développeur</strong> (toggle en haut à droite)</li>
+              <li>Clique <strong>"Charger l'extension non empaquetée"</strong></li>
+              <li>Sélectionne le dossier :<br/>
+                <code style={{ fontSize: 12, background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+                  e:\Mes documents\Dev_Android\KesKonMange\extension
+                </code>
+              </li>
+              <li>L'icône 🍽 apparaît dans la barre Chrome</li>
+            </ol>
+            <p style={{ fontSize: 13, color: '#64748b', marginTop: 12 }}>
+              Sur chaque page de recette, clique sur l'icône pour l'ajouter directement à KesKonMange.
+            </p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button onClick={() => { localStorage.setItem('ext-dismissed', '1'); setDismissed(true); setShowHelp(false) }}
+                style={btnStyle('#10b981')}>C'est fait !</button>
+              <button onClick={() => setShowHelp(false)} style={btnStyle('#94a3b8')}>Fermer</button>
+            </div>
+          </div>
+        </Overlay>
+      )}
+    </>
   )
 }
 
